@@ -6,29 +6,56 @@ use std::vec::Vec;
 const PLAYER_STARTING_LENGTH: usize = 5;
 const FOOD_ID: u32 = 1;
 
+// gameinstance.h
+const DEATH_NONE: u32 = 0;
+const DEATH_EATEN: u32 = 1;
+const DEATH_STARVE: u32 = 2;
+const DEATH_BODY: u32 = 2; // This is the worst -- wall collision
+
+type Position = (isize, isize);
+type Node = (Position, isize);
+
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 struct Tile {
     x: u32,
     y: u32,
 }
 
-#[derive(Clone, Copy)]
-enum DeathReason {
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum DeathReason {
     None,
     Eaten,
     Starve,
-    Body,
+    Body, // This is the worst -- wall collision
 }
 
-struct Player {
-    id: u32,
-    alive: bool,
-    health: u32,
-    move_dir: char,
-    turn: u32,
-    death_reason: DeathReason,
-    body: Vec<Tile>,
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Player {
+    id_: usize,
+    alive_: bool,
+    health_: usize,
+    move_: char,
+    turn_: usize,
+    death_reason_: DeathReason,
+    body_: Vec<Tile>,
 }
+
+impl Player {
+    pub fn new(id: usize) -> Self {
+        Self {
+            id_,
+            alive_: true,
+            health_: 100,
+            move_: 'u',
+            turn_: 0,
+            death_reason_: DeathReason::None,
+            body_: Vec::new(),
+        }
+    }
+}
+
+type State = (Vec<usize>, HashMap<usize, Player>, HashSet<Tile>, usize, usize);
+type Parameters = (usize, usize, usize, f32);
 
 struct GameInstance {
     board_width: u32,

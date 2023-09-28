@@ -1,95 +1,11 @@
-use std::sync::{Arc, Mutex, Condvar};
-use std::thread;
-use std::collections::VecDeque;
-
-type Task = Box<dyn FnOnce() + Send + 'static>;
-
-struct ThreadPool {
-    workers: Vec<Worker>,
-    sender: Arc<Mutex<Sender>>,
-}
-
-struct Worker {
-    id: usize,
-    thread: Option<thread::JoinHandle<()>>,
-}
-
-struct Sender {
-    tasks: VecDeque<Task>,
-    stop: bool,
-}
-
-impl ThreadPool {
-    fn new(size: usize) -> ThreadPool {
-        let sender = Arc::new(Mutex::new(Sender {
-            tasks: VecDeque::new(),
-            stop: false,
-        }));
-        let mut workers = Vec::with_capacity(size);
-
-        for id in 0..size {
-            workers.push(Worker::new(id, Arc::clone(&sender)));
-        }
-
-        ThreadPool { workers, sender }
-    }
-
-    fn execute<F>(&self, f: F)
-    where
-        F: FnOnce() + Send + 'static,
-    {
-        let task = Box::new(f);
-        let mut sender = self.sender.lock().unwrap();
-        sender.tasks.push_back(task);
-    }
-
-    fn join(&mut self) {
-        for _ in &mut self.workers {
-            let mut sender = self.sender.lock().unwrap();
-            sender.stop = true;
-        }
-
-        for worker in &mut self.workers {
-            if let Some(thread) = worker.thread.take() {
-                thread.join().unwrap();
-            }
-        }
-    }
-}
-
-impl Worker {
-    fn new(id: usize, sender: Arc<Mutex<Sender>>) -> Worker {
-        let thread = thread::spawn(move || loop {
-            let task;
-            {
-                let mut sender = sender.lock().unwrap();
-                if sender.stop && sender.tasks.is_empty() {
-                    return;
-                }
-                task = sender.tasks.pop_front();
-            }
-
-            if let Some(task) = task {
-                task();
-            }
-        });
-
-        Worker {
-            id,
-            thread: Some(thread),
-        }
-    }
-}
-
-
-
-// gamewrapper.cpp
 use pyo3::prelude::*;
 use pyo3::wrap_pyfunction;
 use rayon::prelude::*;
 use std::collections::VecDeque;
 use std::hash::{Hash, Hasher};
 use std::sync::{Arc, Mutex};
+
+use crate::gameinstance::GameInstance;
 
 const NUM_LAYERS: usize = 17;
 const LAYER_WIDTH: usize = 23;
