@@ -5,7 +5,7 @@ use std::collections::VecDeque;
 use std::hash::{Hash, Hasher};
 use std::sync::{Arc, Mutex};
 
-use crate::gameinstance::GameInstance;
+use crate::gameinstance::{GameInstance, State};
 
 const NUM_LAYERS: usize = 17;
 const LAYER_WIDTH: usize = 23;
@@ -55,7 +55,7 @@ pub struct GameWrapper {
     fixed_orientation_: bool,
     use_symmetry_: bool,
     game_instance: Arc<Mutex<GameInstance>>,
-    thread_pool: ThreadPool,
+    // thread_pool: ThreadPool,
 }
 
 #[pymethods]

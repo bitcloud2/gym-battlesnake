@@ -54,10 +54,10 @@ impl Player {
     }
 }
 
-type State = (Vec<usize>, HashMap<usize, Player>, HashSet<Tile>, usize, usize);
-type Parameters = (usize, usize, usize, f32);
+pub type State = (Vec<usize>, HashMap<usize, Player>, HashSet<Tile>, usize, usize);
+pub type Parameters = (usize, usize, usize, f32);
 
-struct GameInstance {
+pub struct GameInstance {
     board_width: u32,
     board_length: u32,
     num_players: u32,
@@ -71,7 +71,7 @@ struct GameInstance {
 }
 
 impl GameInstance {
-    fn new(board_width: u32, board_length: u32, num_players: u32, food_spawn_chance: f32) -> Self {
+    pub fn new(board_width: u32, board_length: u32, num_players: u32, food_spawn_chance: f32) -> Self {
         let mut rng = rand::thread_rng();
         let mut game_id = 1000000;
         let mut board = vec![0; (board_width * board_length) as usize];
@@ -128,7 +128,7 @@ impl GameInstance {
         }
     }
 
-    fn step(&mut self) {
+    pub fn step(&mut self) {
         self.turn += 1;
         let mut players_to_kill = Vec::new();
         let mut food_to_delete = Vec::new();
@@ -282,15 +282,15 @@ impl GameInstance {
         }
     }
 
-    fn get_state(&self) -> (&Vec<u32>, &HashMap<u32, Player>, &HashSet<Tile>, u32, u32) {
+    pub fn get_state(&self) -> (&Vec<u32>, &HashMap<u32, Player>, &HashSet<Tile>, u32, u32) {
         (&self.board, &self.players, &self.food, self.board_width, self.board_length)
     }
 
-    fn get_parameters(&self) -> (u32, u32, u32, f32) {
+    pub fn get_parameters(&self) -> (u32, u32, u32, f32) {
         (self.board_width, self.board_length, self.num_players, self.food_spawn_chance)
     }
 
-    fn set_player_move(&mut self, id: u32, m: char) -> bool {
+    pub fn set_player_move(&mut self, id: u32, m: char) -> bool {
         if let Some(player) = self.players.get_mut(&id) {
             player.move_dir = m;
             true
@@ -299,31 +299,31 @@ impl GameInstance {
         }
     }
 
-    fn is_over(&self) -> bool {
+    pub fn is_over(&self) -> bool {
         self.over
     }
 
-    fn get_turn(&self) -> u32 {
+    pub fn get_turn(&self) -> u32 {
         self.turn
     }
 
-    fn get_game_id(&self) -> u32 {
+    pub fn get_game_id(&self) -> u32 {
         self.game_id
     }
 
-    fn get_tile_id(&self, i: u32, j: u32) -> u32 {
+    pub fn get_tile_id(&self, i: u32, j: u32) -> u32 {
         self.board[(i * self.board_length + j) as usize]
     }
 
-    fn get_tile_id_from_tile(&self, t: Tile) -> u32 {
+    pub fn get_tile_id_from_tile(&self, t: Tile) -> u32 {
         self.board[(t.x * self.board_length + t.y) as usize]
     }
 
-    fn get_player_ids(&self) -> Vec<u32> {
+    pub fn get_player_ids(&self) -> Vec<u32> {
         self.players.keys().cloned().collect()
     }
 
-    fn get_player_id(&self, num: usize) -> Option<u32> {
+    pub fn get_player_id(&self, num: usize) -> Option<u32> {
         self.players.keys().nth(num).cloned()
     }
 }
