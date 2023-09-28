@@ -1,0 +1,31 @@
+[build-system]
+requires = ["maturin>=0.14,<0.15"]
+build-backend = "maturin"
+
+[project]
+name = "gym_battlesnake"
+version = "0.1.0"
+authors = [{name = "Jeff", email = "bitcloud22@gmail.com"}]
+description = "Gym environment simulating BattleSnake."
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.8"
+keywords = ["battlesnake", "gym", "gymnasium"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Rust",
+    "License :: OSI Approved :: Apache Software License",
+    "Natural Language :: English",
+    "Intended Audience :: Developers",
+    "Topic :: Scientific/Engineering",
+]
+dependencies = [
+    "gymnasium",
+    "ipython",
+    "numpy",
+    "stable-baselines==2.10.0"
+]
+
+[tool.maturin]
+features = ["pyo3/extension-module"]
+module-name = "gym_battlesnake.rust_fn"

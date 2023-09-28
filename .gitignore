@@ -1,24 +1,18 @@
-# Editors
-.vscode
-.idea/
-
-# Builds
-build/
-dist/
-board/
-*.dylib
-__pycache__/
-*.out
-*.test
-*.pyc
-*.pyo
-*.so 
-
-# Pip
-gym_battlesnake.egg-info
-
-# General
-*.tgz
 .DS_Store
-coverage.txt
-debug
+.ipynb_checkpoints/
+__pycache__/
+
+# Distribution / packaging
+build/
+Cargo.lock
+dist/
+target/
+wheels/
+*.egg-info/
+
+# unit test / coverage reports
+htmlcov/
+test-requirements.txt
+.coverage
+.pytest_cache/
+.tox/
