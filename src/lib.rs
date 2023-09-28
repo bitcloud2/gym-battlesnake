@@ -1,3 +1,4 @@
+mod gameinstance;
 mod gamewrapper;
 
 pub use gamewrapper::GameWrapper;
