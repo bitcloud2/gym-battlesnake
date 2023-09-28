@@ -28,4 +28,4 @@ dependencies = [
 
 [tool.maturin]
 features = ["pyo3/extension-module"]
-module-name = "gym_battlesnake.rust_fn"
+module-name = "gym_battlesnake.rust"

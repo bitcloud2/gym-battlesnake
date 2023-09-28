@@ -84,6 +84,8 @@ impl Worker {
 
 
 // gamewrapper.cpp
+use pyo3::prelude::*;
+use pyo3::wrap_pyfunction;
 use rayon::prelude::*;
 use std::collections::VecDeque;
 use std::hash::{Hash, Hasher};
@@ -126,6 +128,7 @@ struct Info {
     over: bool,
 }
 
+#[pyclass]
 pub struct GameWrapper {
     n_envs_: usize,
     n_models_: usize,
@@ -139,6 +142,7 @@ pub struct GameWrapper {
     thread_pool: ThreadPool,
 }
 
+#[pymethods]
 impl GameWrapper {
     fn orientation(&self, game_id: u32, turn: u32, player_id: u32, fixed: bool) -> u32 {
         if fixed {
