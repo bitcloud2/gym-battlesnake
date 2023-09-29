@@ -10,20 +10,20 @@ const LAYER_WIDTH: usize = 23;
 const LAYER_HEIGHT: usize = 23;
 const OBS_SIZE: usize = NUM_LAYERS * LAYER_WIDTH * LAYER_HEIGHT;
 
-impl PartialEq for Tile {
-    fn eq(&self, other: &Self) -> bool {
-        self.x == other.x && self.y == other.y
-    }
-}
+// impl PartialEq for Tile {
+//     fn eq(&self, other: &Self) -> bool {
+//         self.x == other.x && self.y == other.y
+//     }
+// }
 
-impl Eq for Tile {}
+// impl Eq for Tile {}
 
-impl Hash for Tile {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        self.x.hash(state);
-        self.y.hash(state);
-    }
-}
+// impl Hash for Tile {
+//     fn hash<H: Hasher>(&self, state: &mut H) {
+//         self.x.hash(state);
+//         self.y.hash(state);
+//     }
+// }
 
 struct Info {
     health: u32,
