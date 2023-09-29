@@ -3,18 +3,12 @@ use rayon::prelude::*;
 use std::hash::{Hash, Hasher};
 use std::sync::{Arc, Mutex};
 
-use crate::gameinstance::{GameInstance, State, PLAYER_STARTING_LENGTH};
+use crate::gameinstance::{GameInstance, State, PLAYER_STARTING_LENGTH, DeathReason, Tile};
 
 const NUM_LAYERS: usize = 17;
 const LAYER_WIDTH: usize = 23;
 const LAYER_HEIGHT: usize = 23;
 const OBS_SIZE: usize = NUM_LAYERS * LAYER_WIDTH * LAYER_HEIGHT;
-
-#[derive(Clone, Copy)]
-struct Tile {
-    x: u32,
-    y: u32,
-}
 
 impl PartialEq for Tile {
     fn eq(&self, other: &Self) -> bool {
@@ -44,14 +38,14 @@ struct Info {
 
 #[pyclass]
 pub struct GameWrapper {
-    n_envs_: usize,
-    n_models_: usize,
-    envs_: Vec<Option<GameInstance>>,
-    obss_: Vec<u8>,
-    acts_: Vec<u8>,
-    info_: Vec<Info>,
-    fixed_orientation_: bool,
-    use_symmetry_: bool,
+    n_envs: usize,
+    n_models: usize,
+    envs: Vec<Option<GameInstance>>,
+    obss: Vec<u8>,
+    acts: Vec<u8>,
+    info: Vec<Info>,
+    fixed_orientation: bool,
+    use_symmetry: bool,
     game_instance: Arc<Mutex<GameInstance>>,
     // thread_pool: ThreadPool,
 }
@@ -290,18 +284,18 @@ impl GameWrapper {
     }
 
     pub fn reset(&mut self) {
-        self.obss_.par_iter_mut().for_each(|x| *x = 0.0);
-        self.envs_.par_iter_mut().enumerate().for_each(|(ii, gi)| {
+        self.obss.par_iter_mut().for_each(|x| *x = 0.0);
+        self.envs.par_iter_mut().enumerate().for_each(|(ii, gi)| {
             let bwidth = 11;
             let bheight = 11;
             let food_spawn_chance = 0.15;
             *gi = Some(GameInstance::new(bwidth, bheight, self.n_models_, food_spawn_chance));
-            let ids = gi.as_ref().unwrap().getplayerids();
-            let state = gi.as_ref().unwrap().getstate();
+            let ids = gi.as_ref().unwrap().get_player_ids();
+            let state = gi.as_ref().unwrap().get_state();
             for m in 0..self.n_models_ {
-                writeobs(m, ii, ids[m], state, orientation(gi.as_ref().unwrap().gameid(), gi.as_ref().unwrap().turn(), ids[m], self.fixed_orientation_));
+                self.write_obs(m, ii, ids[m], state, self.orientation(gi.as_ref().unwrap().get_game_id(), gi.as_ref().unwrap().get_turn(), ids[m], self.fixed_orientation));
             }
-            self.info_[ii] = Info {
+            self.info[ii] = Info {
                 health: 100,
                 length: PLAYER_STARTING_LENGTH,
                 turn: 0,
@@ -315,26 +309,26 @@ impl GameWrapper {
     }
 
     pub fn step(&mut self) {
-        self.obss_.par_iter_mut().for_each(|x| *x = 0.0);
-        self.envs_.par_iter_mut().enumerate().for_each(|(ii, gi)| {
+        self.obss.par_iter_mut().for_each(|x| *x = 0.0);
+        self.envs.par_iter_mut().enumerate().for_each(|(ii, gi)| {
             let bwidth = 11;
             let bheight = 11;
             let food_spawn_chance = 0.15;
-            let ids = gi.as_ref().unwrap().getplayerids();
-            let state = gi.as_ref().unwrap().getstate();
-            for m in 0..self.n_models_ {
-                let action = getaction(m, ii, orientation(gi.as_ref().unwrap().gameid(), gi.as_ref().unwrap().turn(), ids[m], self.fixed_orientation_), ids[m], state.clone());
-                gi.as_mut().unwrap().setplayermove(ids[m], action);
+            let ids = gi.as_ref().unwrap().get_player_ids();
+            let state = gi.as_ref().unwrap().get_state();
+            for m in 0..self.n_models {
+                let action = self.get_action(m, ii, self.orientation(gi.as_ref().unwrap().get_game_id(), gi.as_ref().unwrap().get_turn(), ids[m], self.fixed_orientation), ids[m], state.clone());
+                gi.as_mut().unwrap().set_player_move(ids[m], action);
             }
             let player_id = ids[0];
             let it = state.get(&player_id).unwrap();
             gi.as_mut().unwrap().step();
-            let done = !it.alive || gi.as_ref().unwrap().over();
+            let done = !it.alive || gi.as_ref().unwrap().is_over();
             let count = ids.iter().filter(|&&id| state.get(&id).unwrap().alive).count();
-            self.info_[ii] = Info {
+            self.info[ii] = Info {
                 health: it.health,
                 length: it.body.len(),
-                turn: gi.as_ref().unwrap().turn(),
+                turn: gi.as_ref().unwrap().get_turn(),
                 alive: it.alive,
                 ate: it.health == 100 && gi.as_ref().unwrap().turn() > 0,
                 over: done,
@@ -342,12 +336,12 @@ impl GameWrapper {
                 death_reason: it.death_reason,
             };
             if done {
-                *gi = Some(GameInstance::new(bwidth, bheight, self.n_models_, food_spawn_chance));
+                *gi = Some(GameInstance::new(bwidth, bheight, self.n_models, food_spawn_chance));
             }
-            let ids = gi.as_ref().unwrap().getplayerids();
-            let state = gi.as_ref().unwrap().getstate();
-            for m in 0..self.n_models_ {
-                writeobs(m, ii, ids[m], state.clone(), orientation(gi.as_ref().unwrap().gameid(), gi.as_ref().unwrap().turn(), ids[m], self.fixed_orientation_));
+            let ids = gi.as_ref().unwrap().get_player_ids();
+            let state = gi.as_ref().unwrap().get_state();
+            for m in 0..self.n_models {
+                self.write_obs(m, ii, ids[m], state.clone(), self.orientation(gi.as_ref().unwrap().get_game_id(), gi.as_ref().unwrap().get_turn(), ids[m], self.fixed_orientation));
             }
         });
     }

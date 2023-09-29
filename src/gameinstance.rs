@@ -15,7 +15,7 @@ type Position = (isize, isize);
 type Node = (Position, isize);
 
 #[derive(Clone, Debug, Copy, PartialEq, Eq, Hash)]
-struct Tile {
+pub struct Tile {
     x: u32,
     y: u32,
 }
@@ -30,13 +30,13 @@ pub enum DeathReason {
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Player {
-    id: usize,
-    alive: bool,
-    health: usize,
-    move_dir: char,
-    turn: usize,
-    death_reason: DeathReason,
-    body: Vec<Tile>,
+    pub id: usize,
+    pub alive: bool,
+    pub health: usize,
+    pub move_dir: char,
+    pub turn: usize,
+    pub death_reason: DeathReason,
+    pub body: Vec<Tile>,
 }
 
 impl Player {
@@ -71,11 +71,11 @@ pub struct GameInstance {
 
 impl GameInstance {
     fn at(&mut self, i: usize, j: usize) -> &mut usize {
-        &mut self.board_[i * self.board_length_ + j]
+        &mut self.board[i * self.board_length + j]
     }
 
     fn at_tile(&mut self, t: Tile) -> &mut usize {
-        &mut self.board_[t.0 * self.board_length_ + t.1]
+        &mut self.board[t.x * self.board_length + t.y]
     }
 
     pub fn new(board_width: u32, board_length: u32, num_players: u32, food_spawn_chance: f32) -> Self {
@@ -165,7 +165,7 @@ impl GameInstance {
             if next_head.x < 0 || next_head.x >= self.board_width || next_head.y < 0 || next_head.y >= self.board_length {
                 players_to_kill.push(player.id);
                 player.body.pop();
-            } else if self.at(next_head) == FOOD_ID {
+            } else if self.at_tile(next_head) == FOOD_ID {
                 player.health = 100;
                 player.body.insert(0, next_head);
                 food_to_delete.push(next_head);
@@ -196,7 +196,7 @@ impl GameInstance {
             let head = player.body[0];
             heads.insert(head, player.id);
             for &body_part in &player.body[1..] {
-                self.at(body_part) = player.id;
+                *self.at_tile(body_part) = player.id;
             }
         }
 
@@ -229,7 +229,7 @@ impl GameInstance {
             }
 
             let head = player.body[0];
-            if self.at(head) >= 1000000 {
+            if self.at_tile(head) >= &mut 1000000 {
                 players_to_kill.push(player.id);
                 player.death_reason = DeathReason::Body;
             }
@@ -278,14 +278,14 @@ impl GameInstance {
             }
             players_alive += 1;
             for &body_part in &player.body {
-                self.at(body_part) = player.id;
+                *self.at_tile(body_part) = player.id;
             }
         }
 
         self.over = (players_alive <= 1 && self.num_players > 1) || (players_alive == 0 && self.num_players == 1);
 
         for &food in self.food.values() {
-            self.at(food) = FOOD_ID;
+            *self.at_tile(food) = FOOD_ID;
         }
     }
 
