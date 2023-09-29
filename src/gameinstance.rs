@@ -1,9 +1,8 @@
 use rand::prelude::*;
 use std::collections::{HashMap, HashSet};
-use std::time::SystemTime;
 use std::vec::Vec;
 
-const PLAYER_STARTING_LENGTH: usize = 5;
+pub const PLAYER_STARTING_LENGTH: usize = 5;
 const FOOD_ID: u32 = 1;
 
 // gameinstance.h
@@ -15,7 +14,7 @@ const DEATH_BODY: u32 = 2; // This is the worst -- wall collision
 type Position = (isize, isize);
 type Node = (Position, isize);
 
-#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Clone, Debug, Copy, PartialEq, Eq, Hash)]
 struct Tile {
     x: u32,
     y: u32,
@@ -31,25 +30,25 @@ pub enum DeathReason {
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Player {
-    id_: usize,
-    alive_: bool,
-    health_: usize,
-    move_: char,
-    turn_: usize,
-    death_reason_: DeathReason,
-    body_: Vec<Tile>,
+    id: usize,
+    alive: bool,
+    health: usize,
+    move_dir: char,
+    turn: usize,
+    death_reason: DeathReason,
+    body: Vec<Tile>,
 }
 
 impl Player {
     pub fn new(id: usize) -> Self {
         Self {
-            id_,
-            alive_: true,
-            health_: 100,
-            move_: 'u',
-            turn_: 0,
-            death_reason_: DeathReason::None,
-            body_: Vec::new(),
+            id: id,
+            alive: true,
+            health: 100,
+            move_dir: 'u',
+            turn: 0,
+            death_reason: DeathReason::None,
+            body: Vec::new(),
         }
     }
 }
@@ -71,6 +70,14 @@ pub struct GameInstance {
 }
 
 impl GameInstance {
+    fn at(&mut self, i: usize, j: usize) -> &mut usize {
+        &mut self.board_[i * self.board_length_ + j]
+    }
+
+    fn at_tile(&mut self, t: Tile) -> &mut usize {
+        &mut self.board_[t.0 * self.board_length_ + t.1]
+    }
+
     pub fn new(board_width: u32, board_length: u32, num_players: u32, food_spawn_chance: f32) -> Self {
         let mut rng = rand::thread_rng();
         let mut game_id = 1000000;
@@ -248,7 +255,7 @@ impl GameInstance {
             let mut x = rng.gen_range(0..self.board_width);
             let mut y = rng.gen_range(0..self.board_length);
             loop {
-                if self.at(Tile { x, y }) == 0 {
+                if self.at_tile(Tile { x, y }) == 0 {
                     break;
                 }
                 x = rng.gen_range(0..self.board_width);
@@ -258,7 +265,7 @@ impl GameInstance {
                     break;
                 }
             }
-            self.at(Tile { x, y }) = FOOD_ID;
+            self.at_tile(Tile { x, y }) = FOOD_ID;
             self.food.insert(FOOD_ID, Tile { x, y });
         }
 

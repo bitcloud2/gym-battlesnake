@@ -1,11 +1,9 @@
 use pyo3::prelude::*;
-use pyo3::wrap_pyfunction;
 use rayon::prelude::*;
-use std::collections::VecDeque;
 use std::hash::{Hash, Hasher};
 use std::sync::{Arc, Mutex};
 
-use crate::gameinstance::{GameInstance, State};
+use crate::gameinstance::{GameInstance, State, PLAYER_STARTING_LENGTH};
 
 const NUM_LAYERS: usize = 17;
 const LAYER_WIDTH: usize = 23;
@@ -304,14 +302,14 @@ impl GameWrapper {
                 writeobs(m, ii, ids[m], state, orientation(gi.as_ref().unwrap().gameid(), gi.as_ref().unwrap().turn(), ids[m], self.fixed_orientation_));
             }
             self.info_[ii] = Info {
-                health_: 100,
-                length_: PLAYER_STARTING_LENGTH,
-                turn_: 0,
-                alive_: true,
-                ate_: false,
-                over_: false,
-                alive_count_: self.n_models_,
-                death_reason_: DEATH_NONE,
+                health: 100,
+                length: PLAYER_STARTING_LENGTH,
+                turn: 0,
+                alive: true,
+                ate: false,
+                over: false,
+                alive_count: self.n_models_,
+                death_reason: DeathReason::None,
             };
         });
     }
@@ -334,14 +332,14 @@ impl GameWrapper {
             let done = !it.alive || gi.as_ref().unwrap().over();
             let count = ids.iter().filter(|&&id| state.get(&id).unwrap().alive).count();
             self.info_[ii] = Info {
-                health_: it.health,
-                length_: it.body.len(),
-                turn_: gi.as_ref().unwrap().turn(),
-                alive_: it.alive,
-                ate_: it.health == 100 && gi.as_ref().unwrap().turn() > 0,
-                over_: done,
-                alive_count_: count,
-                death_reason_: it.death_reason,
+                health: it.health,
+                length: it.body.len(),
+                turn: gi.as_ref().unwrap().turn(),
+                alive: it.alive,
+                ate: it.health == 100 && gi.as_ref().unwrap().turn() > 0,
+                over: done,
+                alive_count: count,
+                death_reason: it.death_reason,
             };
             if done {
                 *gi = Some(GameInstance::new(bwidth, bheight, self.n_models_, food_spawn_chance));
