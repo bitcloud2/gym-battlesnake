@@ -289,10 +289,10 @@ impl GameWrapper {
             let bwidth = 11;
             let bheight = 11;
             let food_spawn_chance = 0.15;
-            *gi = Some(GameInstance::new(bwidth, bheight, self.n_models_, food_spawn_chance));
+            *gi = Some(GameInstance::new(bwidth, bheight, self.n_models, food_spawn_chance));
             let ids = gi.as_ref().unwrap().get_player_ids();
             let state = gi.as_ref().unwrap().get_state();
-            for m in 0..self.n_models_ {
+            for m in 0..self.n_models {
                 self.write_obs(m, ii, ids[m], state, self.orientation(gi.as_ref().unwrap().get_game_id(), gi.as_ref().unwrap().get_turn(), ids[m], self.fixed_orientation));
             }
             self.info[ii] = Info {
@@ -302,7 +302,7 @@ impl GameWrapper {
                 alive: true,
                 ate: false,
                 over: false,
-                alive_count: self.n_models_,
+                alive_count: self.n_models,
                 death_reason: DeathReason::None,
             };
         });
@@ -330,7 +330,7 @@ impl GameWrapper {
                 length: it.body.len(),
                 turn: gi.as_ref().unwrap().get_turn(),
                 alive: it.alive,
-                ate: it.health == 100 && gi.as_ref().unwrap().turn() > 0,
+                ate: it.health == 100 && gi.as_ref().unwrap().get_turn() > 0,
                 over: done,
                 alive_count: count,
                 death_reason: it.death_reason,

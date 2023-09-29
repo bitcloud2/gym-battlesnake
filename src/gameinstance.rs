@@ -16,8 +16,8 @@ type Node = (Position, isize);
 
 #[derive(Clone, Debug, Copy, PartialEq, Eq, Hash)]
 pub struct Tile {
-    x: u32,
-    y: u32,
+    pub x: u32,
+    pub y: u32,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
